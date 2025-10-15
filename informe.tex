@@ -68,27 +68,27 @@ El histograma evidencia sesgo moderado (asimetría negativa). La media/varianza 
 
 \section{Identificación del Modelo}
 \subsection{ACF y PACF}
-\textbf{ACF (autocorrelación)}: decaimiento exponencial por lag sugiere componente AR. Las bandas de significancia (aprox. $\pm0.12$) indican correlaciones relevantes cuando se sobrepasan.\\
-\textbf{PACF (autocorrelación parcial)}: corte nítido en lag 1 sugiere \textbf{AR(1)}.
+\textbf{ACF (Función de Autocorrelación)}: decaimiento exponencial por lag sugiere componente AR. Las bandas de significancia (aprox. $\pm0.12$) indican correlaciones relevantes cuando se sobrepasan.\\
+\textbf{PACF (Función de Autocorrelación Parcial)}: corte nítido en lag 1 sugiere \textbf{AR(1)}.
 
 \subsection{Diferenciación}
-La serie diferenciada (d=1) simplifica la estructura en ACF/PACF, reforzando la elección de órdenes bajos. La prueba ADF reporta estadístico $-4.253$ y p-valor $0.0003$; KPSS $0.0842$ (p$=0.10$): estacionariedad tras diferenciar.
+La serie diferenciada (d=1) simplifica la estructura en ACF/PACF, reforzando la elección de órdenes bajos. La prueba ADF (Dickey--Fuller Aumentada) reporta estadístico $-4.253$ y p-valor $0.0003$; KPSS (Kwiatkowski--Phillips--Schmidt--Shin) $0.0842$ (p$=0.10$): estacionariedad tras diferenciar.
 
 \subsection{Órdenes y Modelos Candidatos}
 Justificación teórica:\ \textit{ACF exponencial + PACF corte en lag 1 $\Rightarrow$ AR(1); ADF exige d=1; sin patrón MA $\Rightarrow$ q=0}.\\
-Modelos ARIMA evaluados (AIC/AICc/BIC): el modelo \textbf{ARIMA(1,1,0)} muestra \textit{AIC $\approx$ 1242.1} y buena parsimonia.\\
-Se exploran también candidatos \textit{SARIMA} estacionales con $s=12$; el mejor muestra \textit{AIC $\approx$ 1218.4}. En este trabajo se prioriza \textbf{simplicidad y robustez}, por lo que se continúa con ARIMA(1,1,0) y se comparan resultados.
+Modelos \textbf{ARIMA (Autorregresivo Integrado de Medias Móviles)} evaluados (\textbf{AIC (Criterio de Información de Akaike)} / \textbf{AICc (AIC corregido)} / \textbf{BIC (Criterio de Información Bayesiano)}): el modelo \textbf{ARIMA(1,1,0)} muestra \textit{AIC $\approx$ 1242.1} y buena parsimonia.\\
+Se exploran también candidatos \textbf{SARIMA (Seasonal ARIMA)} estacionales con $s=12$; el mejor muestra \textit{AIC $\approx$ 1218.4}. En este trabajo se prioriza \textbf{simplicidad y robustez}, por lo que se continúa con ARIMA(1,1,0) y se comparan resultados.
 
 \section{Estimación}
 \subsection{Método}
-\textbf{MLE (Maximum Likelihood Estimation)} con algoritmo tipo BFGS; convergencia estable (15 iteraciones; tolerancia $10^{-8}$).
+\textbf{MLE (Máxima Verosimilitud, Maximum Likelihood Estimation)} con algoritmo tipo \textbf{BFGS (Broyden--Fletcher--Goldfarb--Shanno)}; convergencia estable (15 iteraciones; tolerancia $10^{-8}$).
 
 \subsection{Parámetros}
 Para \textbf{ARIMA(1,1,0)}: $\phi_1=0.742$ (significativo, p$<0.001$). Interpretación: el cambio actual depende en un $74\%$ del cambio del periodo anterior. Tiempo de decaimiento aproximado: $\sim3.9$ meses.
 
 \subsection{Comparación y Bondad de Ajuste}
 \begin{itemize}
-  \item \textbf{AIC/AICc/BIC}: menor es mejor y penaliza complejidad. ARIMA(1,1,0) equilibra ajuste y parsimonia.
+  \item \textbf{AIC (Criterio de Información de Akaike) / AICc (AIC corregido) / BIC (Criterio de Información Bayesiano)}: menor es mejor y penaliza complejidad. ARIMA(1,1,0) equilibra ajuste y parsimonia.
   \item \textbf{Sobreajuste}: modelos con más parámetros sin mejora en AICc (penalización adicional).
 \end{itemize}
 
@@ -100,18 +100,18 @@ Gráficamente se distribuyen alrededor de cero y \textit{$\sim95\%$ dentro de $\
 Las barras caen dentro de bandas (ruido blanco). Si aparecieran picos significativos, indicaría \textbf{subajuste}. En este caso, el diagnóstico es favorable.
 
 \subsection{Pruebas y Estabilidad}
-\textbf{Ljung--Box (LB)}: p-valor $\approx 0.42$; \textbf{Jarque--Bera (JB)}: p-valor $\approx 0.24$ (ambos no rechazan supuestos).\\
-\textbf{CUSUM} y \textbf{Chow}: parámetros estables sin cambio estructural relevante.
+\textbf{LB (Ljung--Box)}: p-valor $\approx 0.42$; \textbf{JB (Jarque--Bera)}: p-valor $\approx 0.24$ (ambos no rechazan supuestos).\\
+\textbf{CUSUM (Cumulative Sum)} y \textbf{Chow (prueba de cambio estructural)}: parámetros estables sin cambio estructural relevante.
 
 \section{Pronóstico}
 \subsection{Curva con Intervalos de Confianza}
-Pronóstico de 6 meses con IC al 95\%: la franja de incertidumbre se ensancha moderadamente hacia horizontes más lejanos; cobertura observada (simulada) $\approx92\%$.
+Pronóstico de 6 meses con IC (Intervalo de Confianza) al 95\%: la franja de incertidumbre se ensancha moderadamente hacia horizontes más lejanos; cobertura observada (simulada) $\approx92\%$.
 
 \subsection{Métricas de Precisión}
 \begin{itemize}
-  \item \textbf{MAPE}: $\sim4.2\%$ (error relativo medio bajo).
-  \item \textbf{MAE}: $\sim24{,}850$; \textbf{RMSE}: $\sim32{,}420$; \textbf{$R^2$}: $\sim0.892$.
-  \item \textbf{MASE}: $<1$, el modelo supera al naive.
+  \item \textbf{MAPE (Mean Absolute Percentage Error)}: $\sim4.2\%$ (error relativo medio bajo).
+  \item \textbf{MAE (Mean Absolute Error)}: $\sim24{,}850$; \textbf{RMSE (Root Mean Squared Error)}: $\sim32{,}420$; \textbf{$R^2$ (Coeficiente de determinación)}: $\sim0.892$.
+  \item \textbf{MASE (Mean Absolute Scaled Error)}: $<1$, el modelo supera al naive.
 \end{itemize}
 
 \subsection{Proyección y Contexto}
@@ -129,17 +129,19 @@ El proceso completo (exploración $\rightarrow$ identificación $\rightarrow$ es
 
 \section*{Glosario}
 \begin{itemize}
-  \item \textbf{ACF}: autocorrelación por rezagos de la serie.
-  \item \textbf{PACF}: autocorrelación parcial (impacto directo controlando rezagos intermedios).
-  \item \textbf{ARIMA(\(p,d,q\))}: combinación de AR (\(p\)), diferenciación (\(d\)) y MA (\(q\)).
-  \item \textbf{ADF/KPSS}: pruebas de estacionariedad (ADF busca raíz unitaria; KPSS evalúa estacionariedad).
-  \item \textbf{MLE}: máxima verosimilitud para estimación de parámetros.
-  \item \textbf{AIC/AICc/BIC}: criterios de información que penalizan la complejidad; menor es mejor.
-  \item \textbf{Ljung--Box/Jarque--Bera}: independencia y normalidad de residuales, respectivamente.
-  \item \textbf{CUSUM/Chow}: estabilidad de parámetros y cambios estructurales.
-  \item \textbf{MAPE/MAE/RMSE/$R^2$/MASE}: métricas de precisión del ajuste/pronóstico.
-  \item \textbf{CV}: coeficiente de variación (std/media), variabilidad relativa.
-  \item \textbf{Asimetría/Curtosis}: forma de la distribución (sesgo y ``picudez'').
+  \item \textbf{ACF (Función de Autocorrelación)}: autocorrelación por rezagos de la serie.
+  \item \textbf{PACF (Función de Autocorrelación Parcial)}: impacto directo controlando rezagos intermedios.
+  \item \textbf{ARIMA (Autorregresivo Integrado de Medias Móviles) (\(p,d,q\))}: combinación de AR (\(p\)), diferenciación (\(d\)) y MA (\(q\)).
+  \item \textbf{SARIMA (Seasonal ARIMA)}: variante estacional de ARIMA (periodo \(s\)).
+  \item \textbf{ADF (Dickey--Fuller Aumentada)} y \textbf{KPSS (Kwiatkowski--Phillips--Schmidt--Shin)}: pruebas de estacionariedad.
+  \item \textbf{MLE (Máxima Verosimilitud)}: estimación basada en probabilidad del modelo.
+  \item \textbf{AIC (Criterio de Información de Akaike)}, \textbf{AICc (AIC corregido)}, \textbf{BIC (Criterio de Información Bayesiano)}: criterios que penalizan complejidad; menor es mejor.
+  \item \textbf{LB (Ljung--Box)} y \textbf{JB (Jarque--Bera)}: independencia y normalidad de residuales, respectivamente.
+  \item \textbf{CUSUM (Cumulative Sum)} y \textbf{Chow (prueba de cambio estructural)}: estabilidad de parámetros y cambios estructurales.
+  \item \textbf{MAPE (Mean Absolute Percentage Error)}, \textbf{MAE (Mean Absolute Error)}, \textbf{RMSE (Root Mean Squared Error)}, \textbf{$R^2$ (Coeficiente de determinación)}, \textbf{MASE (Mean Absolute Scaled Error)}: métricas de precisión del ajuste/pronóstico.
+  \item \textbf{CV (Coeficiente de Variación)}: std/media; variabilidad relativa.
+  \item \textbf{IC (Intervalo de Confianza)}: rango de incertidumbre para estimaciones.
+  \item \textbf{Asimetría (Skewness)} y \textbf{Curtosis (Kurtosis)}: forma de la distribución.
 \end{itemize}
 
 \paragraph{Compilación} Para generar PDF: \texttt{pdflatex informe.tex} (dos pasadas). Si usas Overleaf, sube este archivo y compila con \textit{pdfLaTeX}.
