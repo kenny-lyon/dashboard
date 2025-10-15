@@ -123,6 +123,8 @@ Glosario Rápido
 - Jarque‑Bera: prueba de normalidad en residuales.
 - CUSUM / Chow: estabilidad temporal y cambios estructurales.
 - MAPE/MAE/RMSE/R²: métricas de precisión del pronóstico.
+ - MAPE/MAE/RMSE/R²: métricas de precisión del pronóstico.
+ - MASE: Mean Absolute Scaled Error; compara el error vs. un modelo base (naive). <1 indica que el modelo supera al naive.
 - CV: coeficiente de variación (std/media), mide variabilidad relativa.
 - Asimetría/Curtosis: forma de la distribución (sesgo y “picudez”).
 
