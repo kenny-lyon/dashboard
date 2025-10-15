@@ -1,0 +1,143 @@
+Guía de Presentación — Dashboard de Series de Tiempo (Turismo Perú 2020–2025)
+Autor: Estudiante
+
+Propósito
+- Explicar, en lenguaje claro, cada sección del dashboard y cómo interpretarla.
+- Base de datos: arribos de turistas internacionales por mes (serie temporal).
+
+Estructura General del Dashboard
+- Etapa 1: Exploración (Descriptivo, Serie original, Descomposición, Distribución, Rolling mean/var).
+- Etapa 2: Identificación (ACF, PACF, versiones diferenciadas, órdenes).
+- Etapa 3: Estimación (MLE, convergencia, parámetros, interpretación).
+- Etapa 4: Validación (residuales, ACF/PACF de residuales, estabilidad, supuestos).
+- Etapa 5: Pronósticos (curva con IC, métricas, proyección, recomendaciones, riesgos, conclusión).
+
+Etapa 1 — Exploración
+1) Estadísticas Descriptivas (tarjetas con mini‑gráficos)
+   - Media: promedio mensual de arribos. Línea de referencia en el sparkline.
+   - Mediana: el valor central; menos sensible a extremos.
+   - Desv.Est: dispersión alrededor de la media. Sparkline de std rolling (12 meses).
+   - CV: coeficiente de variación (std/media) en %. Mide variabilidad relativa.
+   - Mín/Máx: menor y mayor valor observados; líneas de referencia.
+   - Asimetría: si es negativa, hay cola hacia valores bajos; positiva, hacia altos.
+   - Curtosis: <0 distribución más “plana”; >0 más “picuda”.
+   Cómo leer: valores grandes de Desv.Est/CV indican más volatilidad; comparar con períodos.
+
+2) Serie Temporal Original
+   - Gráfico de línea con arribos mensuales. Observa tendencia (sube/baja), estacionalidad (patrones repetidos en meses del año) y eventos (choques).
+   - Tooltip muestra valores; eje Y en miles.
+
+3) Descomposición (Tendencia, Estacionalidad, Ciclos, Irregularidad)
+   - Tendencia: componente de largo plazo; si es creciente, el sector se recupera.
+   - Estacionalidad: patrón sistemático por mes (p.ej., Jul–Ago más alto).
+   - Ciclos: oscilaciones más largas que la estacionalidad (p.ej., recuperación post‑shock).
+   - Irregularidad (residual): ruido no explicado por los otros componentes.
+   Cómo leer: confirma por qué hay picos/valle; ayuda a decidir si se necesita diferenciación estacional.
+
+4) Distribución (Histograma)
+   - Muestra cuántos meses caen en cada rango de arribos.
+   - Útil para ver sesgo (asimetría) y concentración (curtosis).
+
+5) Rolling mean/var (ventana 12)
+   - Media y varianza móviles para ver cómo cambian nivel y dispersión a lo largo del tiempo.
+   - Subidas en varianza sugieren períodos más inciertos; bajadas, mayor estabilidad.
+
+Etapa 2 — Identificación de Modelo
+1) ACF (Autocorrelación)
+   - Barras por “lag” muestran correlación con el pasado.
+   - Si decae exponencialmente, sugiere componente AR (autoregresivo).
+   - Líneas horizontales (±0.12 aprox.) son bandas de significancia: por fuera → correlación relevante.
+
+2) PACF (Autocorrelación Parcial)
+   - Mide la relación directa con rezagos controlando rezagos intermedios.
+   - Corte abrupto en un lag (p.ej., lag 1) sugiere orden AR(p) igual a ese lag.
+
+3) ACF/PACF Diferenciada
+   - Tras diferenciar (d=1) la serie, la estructura suele simplificarse.
+   - Ayuda a confirmar órdenes AR/MA para un ARIMA(p,d,q).
+
+4) Órdenes y Justificación
+   - Ejemplo: ACF exponencial + PACF corte en lag 1 → AR(1); ADF requiere d=1; sin patrón MA → q=0.
+   - Conclusión ejemplar: ARIMA(1,1,0) por parsimonia y evidencia.
+
+Etapa 3 — Estimación
+1) MLE (Maximum Likelihood Estimation)
+   - Método estándar para estimar parámetros del modelo (p.ej., φ1 de AR(1)).
+   - Reporte de convergencia: iteraciones, criterio de parada, estabilidad numérica.
+
+2) Parámetros Estimados
+   - Tabla con coeficientes, errores estándar, t‑estadístico y p‑valores.
+   - Interpretación simple: φ1=0.742 → el cambio actual depende ~74% del cambio anterior.
+
+3) Comparación de Modelos (AIC/AICc/BIC)
+   - Se elige el modelo con penalización menor (parsimonioso y buen ajuste).
+   - Evita sobreajuste: más parámetros sin mejora → peor AICc/BIC.
+
+Etapa 4 — Validación del Modelo
+1) Residuales
+   - Deben distribuirse alrededor de 0, sin patrones; ~95% dentro de ±2σ.
+   - Gráfico de dispersión con líneas de referencia.
+
+2) ACF/PACF de Residuales
+   - Objetivo: no debe quedar autocorrelación. Barras dentro de bandas → “ruido blanco”.
+   - Si hay picos significativos, hay estructura no modelada (subajuste).
+
+3) Tests y Estabilidad
+   - Ljung‑Box (LB): independencia de residuales (p‑valor alto deseable).
+   - Jarque‑Bera (JB): normalidad (p‑valor alto deseable).
+   - CUSUM / Test de Chow: estabilidad de parámetros y ausencia de cambios estructurales.
+
+4) Diagnóstico de Sobre/Subajuste
+   - Sobreajuste: modelos complejos sin mejora en AICc.
+   - Subajuste: estructura en residuales (ACF/PACF residual significativa).
+
+Etapa 5 — Pronósticos
+1) Curva de Pronóstico con IC 95%
+   - Línea de pronóstico y franja verde (intervalos de confianza).
+   - Cobertura objetivo ~95%; amplitud indica incertidumbre.
+
+2) Serie + Pronóstico
+   - Superpone lo observado y lo proyectado para ver continuidad y cambios.
+
+3) Métricas de Precisión
+   - MAPE (% error medio absoluto), MAE, RMSE, R². Valores menores/altos según métrica son mejores.
+
+4) Proyección y Contexto
+   - Proyección anual (p.ej., total y crecimiento); explica estacionalidad: meses altos (Jul–Ago), bajos (Ene–Mar).
+
+5) Monitoreo, Tabla, Recomendaciones y Riesgos
+   - Monitoreo: actualización periódica y umbrales de alerta.
+   - Tabla: detalle por mes de pronósticos e intervalos.
+   - Recomendaciones: capacidad, precios, infra, marketing, recalibración.
+   - Riesgos: eventos externos, supuestos de estabilidad, variables omitidas.
+
+Glosario Rápido
+- ACF: autocorrelación; relación de la serie con sus rezagos.
+- PACF: autocorrelación parcial; impacto directo controlando rezagos intermedios.
+- Diferenciación (d): restar valores consecutivos para lograr estacionariedad.
+- ARIMA(p,d,q): combinación de AR (p), diferenciación (d) y MA (q).
+- AIC/AICc/BIC: criterios con penalización por complejidad; menor es mejor.
+- MLE: estimación por máxima verosimilitud.
+- Residuales: diferencias entre datos y el ajuste del modelo.
+- Ljung‑Box: prueba de independencia en residuales.
+- Jarque‑Bera: prueba de normalidad en residuales.
+- CUSUM / Chow: estabilidad temporal y cambios estructurales.
+- MAPE/MAE/RMSE/R²: métricas de precisión del pronóstico.
+- CV: coeficiente de variación (std/media), mide variabilidad relativa.
+- Asimetría/Curtosis: forma de la distribución (sesgo y “picudez”).
+
+Cómo Exponer en 5–7 Minutos
+1) Contexto breve: qué serie, periodo y objetivo (pronosticar arribos).
+2) Exploración: serie, descomposición y estadísticas clave (estacionalidad Jul–Ago, tendencia creciente).
+3) Identificación: ACF/PACF → órdenes del ARIMA; justificar parsimonia.
+4) Estimación: método (MLE), parámetros significativos y comparación por AIC/AICc/BIC.
+5) Validación: residuales “ruido blanco”, LB/JB ok, estabilidad.
+6) Pronósticos: curva con IC, métricas (MAPE bajo), proyección y recomendaciones.
+7) Cierre: riesgos y plan de monitoreo.
+
+Notas
+- Algunos valores del dashboard son ilustrativos/sintéticos para explicar conceptos.
+- Adapta la interpretación a tus datos reales si cambian los números.
+
+URL Pública (si usas GH Pages con repo "dashboard")
+- https://<usuario>.github.io/dashboard/
