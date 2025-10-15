@@ -1,0 +1,147 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath, amssymb}
+\usepackage{hyperref}
+\geometry{margin=2.5cm}
+
+\title{Análisis de Series Temporales — Turismo Perú 2020--2025}
+\author{Estudiante}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Este informe sintetiza el análisis de la serie mensual de arribos de turistas internacionales a Perú (2020--2025). Se explica paso a paso la exploración, identificación del modelo, estimación, validación y pronóstico. El dashboard interactivo publicado en GitHub Pages complementa las visualizaciones: \\[-0.3em]
+\href{https://kenny-lyon.github.io/dashboard/}{https://kenny-lyon.github.io/dashboard/}.
+\end{abstract}
+
+\section{Datos y Alcance}
+- \textbf{Serie}: arribos mensuales de turistas internacionales.\\
+- \textbf{Objetivo}: modelar y pronosticar el comportamiento para apoyar decisiones del sector.\\
+- \textbf{Periodo}: 2020--2025 (pronóstico hacia 2026).\\
+- \textbf{Contexto}: shock 2020 (COVID-19), recuperación y marcada estacionalidad (Jul--Ago).
+
+\section{Exploración de la Serie}
+\subsection{Estadísticas Descriptivas}
+La Tabla~\ref{tab:descriptivo} resume medidas clave y se acompañan en el dashboard por mini-gráficos (sparklines).
+\begin{table}[h]
+  \centering
+  \caption{Estadísticas descriptivas principales}
+  \label{tab:descriptivo}
+  \begin{tabular}{ll}
+    \toprule
+    Media & 354,507 \\
+    Mediana & 428,000 \\
+    Desviación estándar & 215,840 \\
+    Coeficiente de variación (CV) & 60.9\% \\
+    Mínimo & 8,500 \\
+    Máximo & 672,000 \\
+    Asimetría & $-0.42$ \\
+    Curtosis & $-1.18$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Lectura:} Desviación estándar y CV altos implican mayor volatilidad relativa. Asimetría negativa indica cola hacia valores bajos en la distribución; curtosis negativa sugiere distribución más plana.
+
+\subsection{Serie Temporal Original}
+Se observa una \textbf{tendencia creciente} por recuperación y \textbf{estacionalidad} con picos en Jul--Ago y valles en Ene--Mar.
+
+\subsection{Descomposición}
+La serie se separa en \textit{Tendencia}, \textit{Estacionalidad}, \textit{Ciclos} e \textit{Irregularidad}.\footnote{La tendencia se aproxima con un promedio móvil de ventana 12; la estacionalidad se obtiene como promedio por mes del año sobre residuales de tendencia.}
+\begin{itemize}
+  \item \textbf{Tendencia}: crecimiento sostenido pospandemia.
+  \item \textbf{Estacionalidad}: Jul--Ago $\approx$ $+82$k respecto al promedio; Ene--Mar $\approx$ $-22$k.
+  \item \textbf{Ciclos}: recuperación en torno a 24 meses.
+  \item \textbf{Irregularidad}: componente aleatorio no explicado por los anteriores.
+\end{itemize}
+
+\subsection{Distribución e Inestabilidad}
+El histograma evidencia sesgo moderado (asimetría negativa). La media/varianza rolante (ventana 12) muestra cambios de nivel y de dispersión asociados a la recuperación y a periodos de mayor incertidumbre.
+
+\section{Identificación del Modelo}
+\subsection{ACF y PACF}
+\textbf{ACF (autocorrelación)}: decaimiento exponencial por lag sugiere componente AR. Las bandas de significancia (aprox. $\pm0.12$) indican correlaciones relevantes cuando se sobrepasan.\\
+\textbf{PACF (autocorrelación parcial)}: corte nítido en lag 1 sugiere \textbf{AR(1)}.
+
+\subsection{Diferenciación}
+La serie diferenciada (d=1) simplifica la estructura en ACF/PACF, reforzando la elección de órdenes bajos. La prueba ADF reporta estadístico $-4.253$ y p-valor $0.0003$; KPSS $0.0842$ (p$=0.10$): estacionariedad tras diferenciar.
+
+\subsection{Órdenes y Modelos Candidatos}
+Justificación teórica:\ \textit{ACF exponencial + PACF corte en lag 1 $\Rightarrow$ AR(1); ADF exige d=1; sin patrón MA $\Rightarrow$ q=0}.\\
+Modelos ARIMA evaluados (AIC/AICc/BIC): el modelo \textbf{ARIMA(1,1,0)} muestra \textit{AIC $\approx$ 1242.1} y buena parsimonia.\\
+Se exploran también candidatos \textit{SARIMA} estacionales con $s=12$; el mejor muestra \textit{AIC $\approx$ 1218.4}. En este trabajo se prioriza \textbf{simplicidad y robustez}, por lo que se continúa con ARIMA(1,1,0) y se comparan resultados.
+
+\section{Estimación}
+\subsection{Método}
+\textbf{MLE (Maximum Likelihood Estimation)} con algoritmo tipo BFGS; convergencia estable (15 iteraciones; tolerancia $10^{-8}$).
+
+\subsection{Parámetros}
+Para \textbf{ARIMA(1,1,0)}: $\phi_1=0.742$ (significativo, p$<0.001$). Interpretación: el cambio actual depende en un $74\%$ del cambio del periodo anterior. Tiempo de decaimiento aproximado: $\sim3.9$ meses.
+
+\subsection{Comparación y Bondad de Ajuste}
+\begin{itemize}
+  \item \textbf{AIC/AICc/BIC}: menor es mejor y penaliza complejidad. ARIMA(1,1,0) equilibra ajuste y parsimonia.
+  \item \textbf{Sobreajuste}: modelos con más parámetros sin mejora en AICc (penalización adicional).
+\end{itemize}
+
+\section{Validación}
+\subsection{Residuales}
+Gráficamente se distribuyen alrededor de cero y \textit{$\sim95\%$ dentro de $\pm2\sigma$}. No presentan tendencias ni estacionalidad remanente.
+
+\subsection{ACF/PACF de Residuales}
+Las barras caen dentro de bandas (ruido blanco). Si aparecieran picos significativos, indicaría \textbf{subajuste}. En este caso, el diagnóstico es favorable.
+
+\subsection{Pruebas y Estabilidad}
+\textbf{Ljung--Box (LB)}: p-valor $\approx 0.42$; \textbf{Jarque--Bera (JB)}: p-valor $\approx 0.24$ (ambos no rechazan supuestos).\\
+\textbf{CUSUM} y \textbf{Chow}: parámetros estables sin cambio estructural relevante.
+
+\section{Pronóstico}
+\subsection{Curva con Intervalos de Confianza}
+Pronóstico de 6 meses con IC al 95\%: la franja de incertidumbre se ensancha moderadamente hacia horizontes más lejanos; cobertura observada (simulada) $\approx92\%$.
+
+\subsection{Métricas de Precisión}
+\begin{itemize}
+  \item \textbf{MAPE}: $\sim4.2\%$ (error relativo medio bajo).
+  \item \textbf{MAE}: $\sim24{,}850$; \textbf{RMSE}: $\sim32{,}420$; \textbf{$R^2$}: $\sim0.892$.
+  \item \textbf{MASE}: $<1$, el modelo supera al naive.
+\end{itemize}
+
+\subsection{Proyección y Contexto}
+Total proyectado 2026 $\sim7.85$M; crecimiento $\sim8.5\%$. Estacionalidad: Jul--Ago al alza; Ene--Mar a la baja. Implicaciones para capacidad hotelera y oferta aérea.
+
+\section{Recomendaciones y Riesgos}
+\subsection{Recomendaciones}
+Incrementar capacidad en temporada alta (\(\sim15\%\)), ajustar precios (premium Jul--Ago, descuentos Ene--Mar), ampliar infraestructura crítica (p.ej., aeropuerto Cusco), reforzar marketing internacional y recalibrar el modelo trimestralmente.
+
+\subsection{Riesgos}
+Incertidumbre exógena (eventos), supuestos de estabilidad, variables omitidas. La amplitud del IC recoge parte de esta incertidumbre.
+
+\section{Conclusión}
+El proceso completo (exploración $\rightarrow$ identificación $\rightarrow$ estimación $\rightarrow$ validación $\rightarrow$ pronóstico) evidencia una serie con recuperación y fuerte estacionalidad. Un \textbf{ARIMA(1,1,0)} parsimonioso ofrece buen desempeño y residuales adecuados; \textit{SARIMA} puede mejorar el AIC, pero a costa de mayor complejidad. Las métricas y la validación respaldan la utilidad del pronóstico para la toma de decisiones del sector turístico.
+
+\section*{Glosario}
+\begin{itemize}
+  \item \textbf{ACF}: autocorrelación por rezagos de la serie.
+  \item \textbf{PACF}: autocorrelación parcial (impacto directo controlando rezagos intermedios).
+  \item \textbf{ARIMA(\(p,d,q\))}: combinación de AR (\(p\)), diferenciación (\(d\)) y MA (\(q\)).
+  \item \textbf{ADF/KPSS}: pruebas de estacionariedad (ADF busca raíz unitaria; KPSS evalúa estacionariedad).
+  \item \textbf{MLE}: máxima verosimilitud para estimación de parámetros.
+  \item \textbf{AIC/AICc/BIC}: criterios de información que penalizan la complejidad; menor es mejor.
+  \item \textbf{Ljung--Box/Jarque--Bera}: independencia y normalidad de residuales, respectivamente.
+  \item \textbf{CUSUM/Chow}: estabilidad de parámetros y cambios estructurales.
+  \item \textbf{MAPE/MAE/RMSE/$R^2$/MASE}: métricas de precisión del ajuste/pronóstico.
+  \item \textbf{CV}: coeficiente de variación (std/media), variabilidad relativa.
+  \item \textbf{Asimetría/Curtosis}: forma de la distribución (sesgo y ``picudez'').
+\end{itemize}
+
+\paragraph{Compilación} Para generar PDF: \texttt{pdflatex informe.tex} (dos pasadas). Si usas Overleaf, sube este archivo y compila con \textit{pdfLaTeX}.
+
+\end{document}
